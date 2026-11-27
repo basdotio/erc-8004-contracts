@@ -1,3 +1,4 @@
+import "dotenv/config";
 import hre from "hardhat";
 import { getCreate2Address, keccak256, encodeAbiParameters } from "viem";
 
@@ -13,7 +14,16 @@ import { getCreate2Address, keccak256, encodeAbiParameters } from "viem";
 async function main() {
   const { viem } = await hre.network.connect();
   const publicClient = await viem.getPublicClient();
-  const [deployer] = await viem.getWalletClients();
+  const walletClients = await viem.getWalletClients();
+  if (!walletClients || walletClients.length === 0) {
+    const hasPk = !!(process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY);
+    throw new Error(
+      `No wallet client available. ` +
+      `Please set DEPLOYER_PRIVATE_KEY or PRIVATE_KEY in your environment and/or configure accounts for the target network in hardhat.config.ts. ` +
+      (hasPk ? `A private key is set but no wallet client was created. Check network accounts config (accounts: [...]) for ${"bscTestnet"} or your chosen network.` : `No private key env var is set.`)
+    );
+  }
+  const [deployer] = walletClients;
 
   console.log("Deploying ERC-8004 Upgradeable Contracts");
   console.log("========================================");
