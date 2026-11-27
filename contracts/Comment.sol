@@ -26,7 +26,7 @@ contract Comment is Initializable,OwnableUpgradeable {
     }
 
     function comment(uint256 agentId,string calldata commentText,uint16 score) external {
-        require(score > 100 || score == 0, "invalid score");
+        require(score > 0 && score <= 100, "invalid score");
 
         require(_identityRegistry.ownerOf(agentId) != address(0), "no owner agent");
         _bas.attest(IBAS.AttestationRequest({
